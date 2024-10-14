@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * ben
+ * Ben Scarlett
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -178,7 +178,8 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  int a = ~(x & y) & ~(~x & ~y);
+  return a;
 }
 //2
 /* 
@@ -190,7 +191,11 @@ int bitXor(int x, int y) {
  *   Rating: 2
  */
 int allEvenBits(int x) {
-  return 2;
+  int a = 0x55;
+  a = (a << 8) | 0x55;
+  a = (a << 16) | a;
+  return !((x & a) ^ a);
+  return a;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -201,7 +206,10 @@ int allEvenBits(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int a = (0xAA << 8) + 0xAA;
+  a = (a << 16) + a;
+
+  return !((x & a) ^ a);
 }
 //3
 /* 
@@ -213,7 +221,9 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int dividePower2(int x, int n) {
-    return 2;
+    int a = x >> 31;
+    int b = a & ((1 << n) + ~0);
+    return (x + b) >> n;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -223,7 +233,14 @@ int dividePower2(int x, int n) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int val1 = (x >> 31) & 1;
+  int val2 = (y >> 31) & 1;
+  int diffVals = val1 ^ val2;
+  int lessDiffVals = val1 & diffVals;
+  int difference = y + (~x + 1);
+  int diffVal2 = (difference >> 31) & 1;
+  int lessSame = !diffVal2 & !diffVals;
+  return lessDiffVals | lessSame;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
@@ -234,7 +251,8 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
-  return 2;
+  int a = !( ~(x >> 0x1F ^ y >> 0x1F) & (y >> 0x1F ^ ((x + y) >> 0x1F)));
+  return a;
 }
 /* 
  * replaceByte(x,n,c) - Replace byte n in x with c
@@ -246,10 +264,16 @@ int addOK(int x, int y) {
  *   Rating: 3
  */
 int replaceByte(int x, int n, int c) {
-  return 2;
+  int a = 0xFF << (n << 3);
+  a = ~a;
+  x = x & a;
+  c = c & 0xFF;
+  c = c << (n << 3);
+
+  return x | c; 
 }
 //4
-/* 
+/*
  * remainderPower2 - Compute x%(2^n), for 0 <= n <= 30
  *   Negative arguments should yield negative remainders
  *   Examples: remainderPower2(15,2) = 3, remainderPower2(-35,3) = -3
@@ -258,7 +282,10 @@ int replaceByte(int x, int n, int c) {
  *   Rating: 3
  */
 int remainderPower2(int x, int n) {
-    return 2;
+    int a = (1 << n) + ~0;
+    int b = x >> 31;
+    int val = x & a;
+    return (x & a) + (((~((!!val) << n)) + 1) & b);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -273,7 +300,28 @@ int remainderPower2(int x, int n) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+    int a;
+    int b0;
+    int b1; 
+    int b2; 
+    int b4; 
+    int b8;
+    int b16;
+    a = x >> 31;
+    x = (a & ~x) | (~a & x);
+    b16 = !!(x >> 16) << 4;
+    x = x >> b16;
+    b8 = !!(x >> 8) << 3;
+    x = x >> b8;
+    b4 = !!(x >> 4) << 2;
+    x = x >> b4;
+    b2 = !!(x >> 2) << 1;
+    x = x >> b2;
+    b1 = !!(x >> 1);
+    x = x >> b1;
+    b0 = x;
+
+    return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
 /*
  * bitParity - returns 1 if x contains an odd number of 0's
@@ -283,7 +331,12 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 int bitParity(int x) {
-  return 2;
+   x = (x >> 0x10) ^ x;
+   x = (x >> 0x08) ^ x;
+   x = (x >> 0x04) ^ x;
+   x = (x >> 0x02) ^ x;
+   x = (x >> 0x01) ^ x;
+   return (x & 0x01);
 }
 //float
 /* 
@@ -298,7 +351,18 @@ int bitParity(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned x = uf & 0x80000000;
+  unsigned y = (uf >> 23) & 0xFF;
+  unsigned a = uf & 0x7FFFFF;
+  if (y == 0xFF) {
+    return uf;
+  }
+  if (y == 0) {
+    a <<= 1;
+    return x | a;
+  }
+  y += 1;
+  return x | (y << 23) | a;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -313,5 +377,30 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  unsigned x = uf >> 31;
+  unsigned y = (uf >> 23) & 0xFF;
+  unsigned z =(uf & 0x7FFFFF);
+  unsigned a = 0x7F;
+  unsigned b = y;
+  if (y == 0xFF) {
+    return 0x80000000u;
+  }
+  if (y < a) {
+    return 0x0;
+  }
+  y -= a;
+  if (y >= 31) {
+    return 0x80000000u;
+  }
+  if (y > 22) {
+    b = a << (y - 23);
+  }
+  else {
+    b = a >> (23 - y);
+    b += 1 << y;
+  }
+  if (x) {
+    b = -b;
+    return b;
+  }
 }
